@@ -702,6 +702,28 @@ function selCat(btn) {
     selectedCat = btn.dataset.cat;
 }
 
+const OVERPASS_MIRRORS = [
+    'https://overpass-api.de/api/interpreter',
+    'https://overpass.kumi.systems/api/interpreter',
+    'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
+];
+
+async function overpassFetch(query) {
+    for (const url of OVERPASS_MIRRORS) {
+        try {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: 'data=' + encodeURIComponent(query),
+                signal: AbortSignal.timeout(18000),
+            });
+            if (!res.ok) continue;
+            return await res.json();
+        } catch { continue; }
+    }
+    throw new Error('all mirrors failed');
+}
+
 function searchSpots() {
     const el = document.getElementById('spotList');
     el.innerHTML = '<div class="empty">📍 現在地を取得中…</div>';
@@ -709,12 +731,10 @@ function searchSpots() {
     navigator.geolocation.getCurrentPosition(async pos => {
         const {latitude:lat, longitude:lon} = pos.coords;
         const r = document.getElementById('radiusSelect').value;
-        el.innerHTML = '<div class="empty">🔍 検索中…</div>';
+        el.innerHTML = '<div class="empty">🔍 検索中… (最大20秒かかる場合があります)</div>';
         const q = spotQ[selectedCat].replace(/{R}/g,r).replace(/{LAT}/g,lat).replace(/{LON}/g,lon);
         try {
-            const data = await (await fetch('https://overpass-api.de/api/interpreter', {
-                method:'POST', body:`[out:json][timeout:20];(${q});out body center 40;`
-            })).json();
+            const data = await overpassFetch(`[out:json][timeout:25];(${q});out body center 40;`);
             const spots = (data.elements||[])
                 .filter(e => e.tags?.name)
                 .map(e => { const la=e.lat??e.center?.lat, lo=e.lon??e.center?.lon;
@@ -730,9 +750,11 @@ function searchSpots() {
                     </div>
                     <a class="spot-link" href="https://www.google.com/maps/search/?api=1&query=${s.lat},${s.lon}" target="_blank">Google マップで見る →</a>
                 </div>`).join('');
-        } catch { el.innerHTML='<div class="err">取得に失敗しました。ネット接続を確認してください。</div>'; }
-    }, () => { el.innerHTML='<div class="err">位置情報を許可してください。</div>'; },
-    {enableHighAccuracy:true, timeout:12000});
+        } catch { el.innerHTML='<div class="err">取得に失敗しました。時間をおいて再試行してください。</div>'; }
+    }, (err) => {
+        if (err.code === 1) el.innerHTML = '<div class="err">位置情報の使用を許可してください（ブラウザの設定）。</div>';
+        else el.innerHTML = '<div class="err">位置情報を取得できませんでした。再試行してください。</div>';
+    }, {enableHighAccuracy:false, timeout:20000, maximumAge:60000});
 }
 
 // ── フレーズ ──
