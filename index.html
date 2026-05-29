@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>ポルトガル旅行</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:    #0C1B4D;
+            --navy-2:  #1A2E6E;
+            --navy-3:  #253F8A;
+            --navy-lt: #EDF0F8;
+            --bg:      #F0F2F5;
+            --surface: #FFFFFF;
+            --text:    #0C1B4D;
+            --text2:   #5A6278;
+            --text3:   #9CA3AF;
+            --border:  #E2E5EE;
+            --gray-lt: #F5F6F9;
+            --shadow:  0 1px 2px rgba(12,27,77,0.05), 0 4px 14px rgba(12,27,77,0.07);
+            --r: 16px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: 'Noto Sans JP', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            max-width: 430px;
+            margin: 0 auto;
+            min-height: 100dvh;
+            padding-bottom: 84px;
+        }
+
+        /* ── Header ── */
+        .header {
+            background: var(--navy);
+            padding: 24px 20px 26px;
+        }
+        .header-sub {
+            font-size: 11px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .header h1 {
+            font-size: 24px;
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: -0.5px;
+        }
+
+        /* ── Pages ── */
+        .page { display: none; padding: 16px 14px 0; }
+        .page.active { display: block; animation: fadeUp 0.2s ease; }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(5px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Card ── */
+        .card {
+            background: var(--surface);
+            border-radius: var(--r);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            margin-bottom: 12px;
+        }
+        .card-label {
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--text3);
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            margin-bottom: 16px;
+        }
+
+        /* ── Bottom Nav ── */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 430px;
+            background: rgba(255,255,255,0.94);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border);
+            display: flex;
+            padding: 8px 4px max(env(safe-area-inset-bottom, 8px), 8px);
+            z-index: 100;
+        }
+        .nav-btn {
+            flex: 1;
+            padding: 4px 2px;
+            border: none;
+            background: none;
+            color: var(--text3);
+            font-size: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            transition: color 0.2s;
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+        .nav-btn .ico {
+            font-size: 21px;
+            transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        .nav-btn.active { color: var(--navy); }
+        .nav-btn.active .ico { transform: scale(1.15); }
+
+        /* ── 為替 ── */
+        .rate-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--navy-lt);
+            padding: 10px 14px;
+            border-radius: 10px;
+            margin-bottom: 22px;
+        }
+        .rate-bar .live-dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: #22C55E;
+            flex-shrink: 0;
+        }
+        .rate-bar span {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--navy-2);
+        }
+
+        .fx-block { margin-bottom: 4px; }
+        .fx-flag-row {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            margin-bottom: 8px;
+        }
+        .fx-flag-row .flag { font-size: 20px; }
+        .fx-flag-row .name { font-size: 13px; font-weight: 700; color: var(--text2); }
+
+        .fx-input-wrap { position: relative; }
+        .fx-symbol {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--text3);
+            pointer-events: none;
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+        .fx-field {
+            width: 100%;
+            padding: 14px 14px 14px 42px;
+            font-size: 28px;
+            font-weight: 800;
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            outline: none;
+            background: var(--gray-lt);
+            color: var(--text);
+            letter-spacing: -0.5px;
+            transition: border-color 0.2s, background 0.2s;
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+        .fx-field:focus { border-color: var(--navy-2); background: white; }
+
+        .result-tile {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--navy);
+            border-radius: 12px;
+            padding: 16px 18px;
+            margin-top: 10px;
+        }
+        .result-tile.alt { background: var(--navy-2); }
+        .result-tile .r-val {
+            font-size: 32px;
+            font-weight: 900;
+            color: white;
+            letter-spacing: -1px;
+        }
+        .result-tile .r-unit { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 2px; font-weight: 600; }
+        .result-tile .r-flag { font-size: 32px; opacity: 0.4; }
+
+        .fx-sep {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 20px 0;
+        }
+        .fx-sep::before, .fx-sep::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+        .fx-sep span { font-size: 11px; font-weight: 700; color: var(--text3); letter-spacing: 0.5px; }
+
+        /* ── スポット ── */
+        .chip-row {
+            display: flex;
+            gap: 7px;
+            overflow-x: auto;
+            padding-bottom: 2px;
+            margin-bottom: 14px;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        .chip-row::-webkit-scrollbar { display: none; }
+        .chip {
+            padding: 8px 16px;
+            border: 1.5px solid var(--border);
+            border-radius: 999px;
+            background: white;
+            color: var(--text2);
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.18s;
+            flex-shrink: 0;
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+        .chip.active {
+            background: var(--navy);
+            border-color: var(--navy);
+            color: white;
+        }
+
+        .range-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .range-row label { font-size: 13px; font-weight: 700; color: var(--text2); white-space: nowrap; }
+        .range-select {
+            flex: 1;
+            padding: 10px 12px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-size: 14px;
+            outline: none;
+            background: white;
+            color: var(--text);
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 15px;
+            background: var(--navy);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            margin-bottom: 14px;
+            letter-spacing: 0.2px;
+            transition: opacity 0.15s, transform 0.15s;
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+        .action-btn:active { opacity: 0.8; transform: scale(0.99); }
+
+        .spot-card {
+            background: white;
+            border-radius: 14px;
+            padding: 16px;
+            box-shadow: var(--shadow);
+            margin-bottom: 10px;
+        }
+        .spot-name { font-size: 15px; font-weight: 800; margin-bottom: 8px; color: var(--text); }
+        .spot-meta { display: flex; align-items: center; gap: 7px; }
+        .spot-badge {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--navy-2);
+            background: var(--navy-lt);
+            padding: 4px 10px;
+            border-radius: 999px;
+        }
+        .spot-dist { font-size: 12px; color: var(--text3); font-weight: 600; }
+        .spot-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--navy-2);
+            text-decoration: none;
+        }
+
+        /* ── フレーズ ── */
+        .phrase-group { margin-bottom: 4px; }
+        .phrase-group-title {
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--text);
+            padding: 14px 4px 8px;
+        }
+        .phrase-card {
+            background: white;
+            border-radius: 14px;
+            padding: 14px 16px;
+            box-shadow: var(--shadow);
+            margin-bottom: 8px;
+            border-left: 3px solid var(--navy);
+        }
+        .phrase-ja { font-size: 11px; color: var(--text3); font-weight: 600; margin-bottom: 5px; }
+        .phrase-pt { font-size: 18px; font-weight: 800; color: var(--text); letter-spacing: -0.3px; }
+        .phrase-read { font-size: 12px; color: var(--text3); margin-top: 4px; font-style: italic; }
+
+        /* ── 支出 ── */
+        .sum-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+        .sum-tile {
+            background: white;
+            border-radius: 14px;
+            padding: 16px;
+            box-shadow: var(--shadow);
+            border-top: 3px solid var(--navy);
+        }
+        .sum-tile.total { border-top-color: var(--navy-3); }
+        .sum-tile .s-lbl { font-size: 10px; font-weight: 800; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .sum-tile .s-eur { font-size: 26px; font-weight: 900; color: var(--text); letter-spacing: -1px; line-height: 1; }
+        .sum-tile .s-jpy { font-size: 12px; color: var(--text3); font-weight: 600; margin-top: 5px; }
+
+        .exp-form {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 14px;
+            align-items: center;
+        }
+        .exp-field {
+            padding: 12px;
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            font-size: 16px;
+            outline: none;
+            background: white;
+            color: var(--text);
+            transition: border-color 0.2s;
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+        .exp-field:focus { border-color: var(--navy-2); }
+        .exp-field.w-num { width: 96px; font-weight: 800; }
+        .exp-field.w-note { flex: 1; font-size: 14px; }
+        .exp-add {
+            width: 48px;
+            height: 48px;
+            background: var(--navy);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 26px;
+            font-weight: 300;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            padding-bottom: 2px;
+        }
+
+        .exp-item {
+            background: white;
+            border-radius: 14px;
+            padding: 14px 16px;
+            box-shadow: var(--shadow);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .exp-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--navy); flex-shrink: 0; }
+        .exp-body { flex: 1; min-width: 0; }
+        .exp-note-t { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
+        .exp-date-t { font-size: 11px; color: var(--text3); font-weight: 500; margin-top: 2px; }
+        .exp-right { text-align: right; }
+        .exp-eur-t { font-size: 17px; font-weight: 900; color: var(--text); letter-spacing: -0.5px; }
+        .exp-jpy-t { font-size: 11px; color: var(--text3); font-weight: 500; }
+        .exp-del { background: none; border: none; color: var(--border); font-size: 15px; cursor: pointer; padding: 4px 4px 4px 8px; flex-shrink: 0; }
+        .exp-del:active { color: #EF4444; }
+
+        .ghost-btn {
+            width: 100%;
+            padding: 12px;
+            background: none;
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            color: var(--text3);
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 8px;
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+
+        /* ── その他 ── */
+        .time-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .time-tile {
+            border-radius: 14px;
+            padding: 20px 14px;
+            text-align: center;
+        }
+        .time-tile.pt { background: var(--navy); }
+        .time-tile.jp { background: var(--navy-2); }
+        .time-tile .t-flag { font-size: 24px; margin-bottom: 6px; display: block; }
+        .time-tile .t-country { font-size: 10px; color: rgba(255,255,255,0.45); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+        .time-tile .t-time { font-size: 34px; font-weight: 900; color: white; letter-spacing: -2px; line-height: 1; }
+        .time-tile .t-date { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 7px; font-weight: 500; }
+
+        .wx-display { display: flex; align-items: center; gap: 16px; }
+        .wx-icon { font-size: 56px; line-height: 1; }
+        .wx-temp { font-size: 48px; font-weight: 900; color: var(--text); letter-spacing: -2px; line-height: 1; }
+        .wx-desc { font-size: 14px; color: var(--text2); font-weight: 700; margin-top: 5px; }
+        .wx-wind { font-size: 12px; color: var(--text3); margin-top: 3px; }
+
+        .em-list { display: flex; flex-direction: column; gap: 10px; }
+        .em-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: white;
+            border-radius: 14px;
+            padding: 16px;
+            box-shadow: var(--shadow);
+            text-decoration: none;
+            color: inherit;
+        }
+        .em-item.sos {
+            background: var(--navy);
+        }
+        .em-ico { font-size: 26px; }
+        .em-body { flex: 1; }
+        .em-name { font-size: 12px; color: var(--text3); font-weight: 600; margin-bottom: 3px; }
+        .em-num { font-size: 22px; font-weight: 900; color: var(--navy-2); letter-spacing: -0.5px; }
+        .em-item.sos .em-name { color: rgba(255,255,255,0.5); }
+        .em-item.sos .em-num { color: white; font-size: 26px; }
+
+        /* 共通 */
+        .empty { text-align: center; padding: 28px 16px; color: var(--text3); font-size: 14px; font-weight: 500; }
+        .err { background: #FFF1F1; border-left: 3px solid #EF4444; border-radius: 10px; padding: 12px 14px; color: #DC2626; font-size: 14px; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="header-sub">🇵🇹 Portugal</div>
+    <h1>旅行アシスタント</h1>
+</div>
+
+<!-- ===== 為替 ===== -->
+<div id="page-currency" class="page active">
+    <div class="card">
+        <div class="rate-bar">
+            <div class="live-dot"></div>
+            <span id="rateDisplay">レートを取得中…</span>
+        </div>
+
+        <div class="fx-block">
+            <div class="fx-flag-row">
+                <span class="flag">🇪🇺</span>
+                <span class="name">ユーロ (EUR)</span>
+            </div>
+            <div class="fx-input-wrap">
+                <span class="fx-symbol">€</span>
+                <input class="fx-field" type="number" id="eurInput" placeholder="0" inputmode="decimal" oninput="calcEurToJpy()">
+            </div>
+            <div class="result-tile">
+                <div>
+                    <div class="r-val" id="jpyResult">—</div>
+                    <div class="r-unit">日本円 (JPY)</div>
+                </div>
+                <div class="r-flag">🇯🇵</div>
+            </div>
+        </div>
+
+        <div class="fx-sep"><span>逆算</span></div>
+
+        <div class="fx-block">
+            <div class="fx-flag-row">
+                <span class="flag">🇯🇵</span>
+                <span class="name">円 (JPY)</span>
+            </div>
+            <div class="fx-input-wrap">
+                <span class="fx-symbol">¥</span>
+                <input class="fx-field" type="number" id="jpyInput" placeholder="0" inputmode="decimal" oninput="calcJpyToEur()">
+            </div>
+            <div class="result-tile alt">
+                <div>
+                    <div class="r-val" id="eurResult">—</div>
+                    <div class="r-unit">ユーロ (EUR)</div>
+                </div>
+                <div class="r-flag">🇪🇺</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== スポット ===== -->
+<div id="page-spots" class="page">
+    <div class="chip-row">
+        <button class="chip active" data-cat="food" onclick="selCat(this)">🍽️ 食事</button>
+        <button class="chip" data-cat="sightseeing" onclick="selCat(this)">🏛️ 観光</button>
+        <button class="chip" data-cat="cafe" onclick="selCat(this)">☕ カフェ</button>
+        <button class="chip" data-cat="shop" onclick="selCat(this)">🛍️ ショップ</button>
+        <button class="chip" data-cat="bar" onclick="selCat(this)">🍺 バー</button>
+    </div>
+    <div class="range-row">
+        <label>検索範囲</label>
+        <select class="range-select" id="radiusSelect">
+            <option value="300">300m 以内</option>
+            <option value="500" selected>500m 以内</option>
+            <option value="1000">1km 以内</option>
+            <option value="2000">2km 以内</option>
+        </select>
+    </div>
+    <button class="action-btn" onclick="searchSpots()">📍 現在地から検索する</button>
+    <div id="spotList"><div class="empty">ボタンを押すと周辺スポットを表示します</div></div>
+</div>
+
+<!-- ===== フレーズ ===== -->
+<div id="page-phrases" class="page">
+    <div id="phraseList"></div>
+</div>
+
+<!-- ===== 支出 ===== -->
+<div id="page-expenses" class="page">
+    <div class="sum-grid">
+        <div class="sum-tile">
+            <div class="s-lbl">今日の支出</div>
+            <div class="s-eur" id="todayEur">€0</div>
+            <div class="s-jpy" id="todayJpy">— 円</div>
+        </div>
+        <div class="sum-tile total">
+            <div class="s-lbl">累計支出</div>
+            <div class="s-eur" id="totalEur">€0</div>
+            <div class="s-jpy" id="totalJpy">— 円</div>
+        </div>
+    </div>
+    <div class="exp-form">
+        <input class="exp-field w-num" type="number" id="expAmt" placeholder="€0.00" inputmode="decimal">
+        <input class="exp-field w-note" type="text" id="expNote" placeholder="メモ（例: ランチ）">
+        <button class="exp-add" onclick="addExp()">+</button>
+    </div>
+    <div id="expList"><div class="empty">支出を記録しましょう</div></div>
+    <button class="ghost-btn" onclick="clearExp()">すべて削除</button>
+</div>
+
+<!-- ===== その他 ===== -->
+<div id="page-info" class="page">
+    <div class="card">
+        <div class="card-label">現在時刻</div>
+        <div class="time-grid">
+            <div class="time-tile pt">
+                <span class="t-flag">🇵🇹</span>
+                <div class="t-country">Portugal</div>
+                <div class="t-time" id="ptTime">—</div>
+                <div class="t-date" id="ptDate">—</div>
+            </div>
+            <div class="time-tile jp">
+                <span class="t-flag">🇯🇵</span>
+                <div class="t-country">Japan</div>
+                <div class="t-time" id="jpTime">—</div>
+                <div class="t-date" id="jpDate">—</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-label">現地の天気</div>
+        <button class="action-btn" style="margin-bottom:12px" onclick="fetchWeather()">現在地の天気を取得</button>
+        <div id="wxResult"><div class="empty">ボタンを押して取得</div></div>
+    </div>
+
+    <div class="card">
+        <div class="card-label">緊急連絡先</div>
+        <div class="em-list">
+            <a href="tel:112" class="em-item sos">
+                <div class="em-ico">🚑</div>
+                <div class="em-body">
+                    <div class="em-name">緊急（警察・救急・消防）欧州共通</div>
+                    <div class="em-num">112</div>
+                </div>
+            </a>
+            <a href="tel:+351218112000" class="em-item">
+                <div class="em-ico">🇯🇵</div>
+                <div class="em-body">
+                    <div class="em-name">在ポルトガル日本大使館（リスボン）</div>
+                    <div class="em-num">+351 21 811 2000</div>
+                </div>
+            </a>
+            <a href="tel:+351800203537" class="em-item">
+                <div class="em-ico">ℹ️</div>
+                <div class="em-body">
+                    <div class="em-name">ポルトガル観光案内（無料）</div>
+                    <div class="em-num">800 203 537</div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- ===== ボトムナビ ===== -->
+<nav class="bottom-nav">
+    <button class="nav-btn active" id="nav-currency" onclick="showPage('currency')">
+        <span class="ico">💶</span>為替
+    </button>
+    <button class="nav-btn" id="nav-spots" onclick="showPage('spots')">
+        <span class="ico">📍</span>スポット
+    </button>
+    <button class="nav-btn" id="nav-phrases" onclick="showPage('phrases')">
+        <span class="ico">🗣️</span>フレーズ
+    </button>
+    <button class="nav-btn" id="nav-expenses" onclick="showPage('expenses')">
+        <span class="ico">📊</span>支出
+    </button>
+    <button class="nav-btn" id="nav-info" onclick="showPage('info')">
+        <span class="ico">ℹ️</span>その他
+    </button>
+</nav>
+
+<script>
+// ── ナビ ──
+function showPage(name) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+    document.getElementById('nav-' + name).classList.add('active');
+    if (name === 'info') startClock();
+    if (name === 'expenses') renderExp();
+}
+
+// ── 為替 ──
+let rate = null;
+
+async function fetchRate() {
+    try {
+        const d = await (await fetch('https://open.er-api.com/v6/latest/EUR')).json();
+        rate = d.rates.JPY;
+        const t = new Date(d.time_last_update_utc);
+        document.getElementById('rateDisplay').textContent =
+            `1 EUR = ${rate.toFixed(2)} JPY  ·  ${t.getMonth()+1}/${t.getDate()} 更新`;
+    } catch {
+        document.getElementById('rateDisplay').textContent = 'レート取得失敗。接続を確認してください。';
+    }
+}
+
+const fmt = n => Math.round(n).toLocaleString('ja-JP');
+
+function calcEurToJpy() {
+    const v = parseFloat(document.getElementById('eurInput').value);
+    document.getElementById('jpyResult').textContent = (!rate || isNaN(v)) ? '—' : fmt(v * rate);
+}
+function calcJpyToEur() {
+    const v = parseFloat(document.getElementById('jpyInput').value);
+    document.getElementById('eurResult').textContent = (!rate || isNaN(v)) ? '—' : (v / rate).toFixed(2);
+}
+
+// ── スポット ──
+let selectedCat = 'food';
+
+const spotQ = {
+    food:        `node["amenity"~"^(restaurant|fast_food)$"](around:{R},{LAT},{LON});`,
+    cafe:        `node["amenity"="cafe"](around:{R},{LAT},{LON});`,
+    bar:         `node["amenity"~"^(bar|pub)$"](around:{R},{LAT},{LON});`,
+    sightseeing: `node["tourism"~"^(attraction|museum|monument|viewpoint|gallery)$"](around:{R},{LAT},{LON});way["tourism"~"^(attraction|museum|monument)$"](around:{R},{LAT},{LON});`,
+    shop:        `node["shop"](around:{R},{LAT},{LON});`
+};
+const typeLabel = {
+    restaurant:'レストラン', fast_food:'ファストフード', cafe:'カフェ',
+    bar:'バー', pub:'パブ', attraction:'観光スポット', museum:'博物館・美術館',
+    monument:'モニュメント', viewpoint:'展望台', gallery:'ギャラリー'
+};
+
+function spotLabel(tags) {
+    return typeLabel[tags.amenity] || typeLabel[tags.tourism]
+        || (tags.shop && tags.shop !== 'yes' ? tags.shop : 'ショップ') || 'スポット';
+}
+
+function geoD(a1,o1,a2,o2) {
+    const R=6371000, r=Math.PI/180, da=(a2-a1)*r, dO=(o2-o1)*r;
+    const a = Math.sin(da/2)**2 + Math.cos(a1*r)*Math.cos(a2*r)*Math.sin(dO/2)**2;
+    return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+}
+
+function selCat(btn) {
+    document.querySelectorAll('.chip').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedCat = btn.dataset.cat;
+}
+
+function searchSpots() {
+    const el = document.getElementById('spotList');
+    el.innerHTML = '<div class="empty">📍 現在地を取得中…</div>';
+    if (!navigator.geolocation) { el.innerHTML = '<div class="err">位置情報に対応していません。</div>'; return; }
+    navigator.geolocation.getCurrentPosition(async pos => {
+        const {latitude:lat, longitude:lon} = pos.coords;
+        const r = document.getElementById('radiusSelect').value;
+        el.innerHTML = '<div class="empty">🔍 検索中…</div>';
+        const q = spotQ[selectedCat].replace(/{R}/g,r).replace(/{LAT}/g,lat).replace(/{LON}/g,lon);
+        try {
+            const data = await (await fetch('https://overpass-api.de/api/interpreter', {
+                method:'POST', body:`[out:json][timeout:20];(${q});out body center 40;`
+            })).json();
+            const spots = (data.elements||[])
+                .filter(e => e.tags?.name)
+                .map(e => { const la=e.lat??e.center?.lat, lo=e.lon??e.center?.lon;
+                    return {name:e.tags.name, label:spotLabel(e.tags), lat:la, lon:lo, d:geoD(lat,lon,la,lo)}; })
+                .sort((a,b)=>a.d-b.d).slice(0,25);
+            if (!spots.length) { el.innerHTML='<div class="err">スポットが見つかりません。範囲を広げてみてください。</div>'; return; }
+            el.innerHTML = spots.map(s => `
+                <div class="spot-card">
+                    <div class="spot-name">${s.name}</div>
+                    <div class="spot-meta">
+                        <span class="spot-badge">${s.label}</span>
+                        <span class="spot-dist">📏 ${s.d}m</span>
+                    </div>
+                    <a class="spot-link" href="https://www.google.com/maps/search/?api=1&query=${s.lat},${s.lon}" target="_blank">Google マップで見る →</a>
+                </div>`).join('');
+        } catch { el.innerHTML='<div class="err">取得に失敗しました。ネット接続を確認してください。</div>'; }
+    }, () => { el.innerHTML='<div class="err">位置情報を許可してください。</div>'; },
+    {enableHighAccuracy:true, timeout:12000});
+}
+
+// ── フレーズ ──
+const phrases = [
+    { cat:'👋 基本', items:[
+        {ja:'こんにちは', pt:'Olá', read:'オラ'},
+        {ja:'ありがとう（男性）', pt:'Obrigado', read:'オブリガード'},
+        {ja:'ありがとう（女性）', pt:'Obrigada', read:'オブリガーダ'},
+        {ja:'すみません', pt:'Com licença', read:'コン リセンサ'},
+        {ja:'ごめんなさい', pt:'Desculpe', read:'デシュクルプ'},
+        {ja:'はい / いいえ', pt:'Sim / Não', read:'シン / ナォン'},
+        {ja:'英語は話せますか？', pt:'Fala inglês?', read:'ファラ イングレシュ？'},
+        {ja:'わかりません', pt:'Não entendo', read:'ナォン エンテンドウ'},
+    ]},
+    { cat:'🍽️ 食事', items:[
+        {ja:'メニューをください', pt:'A ementa, por favor', read:'ア エメンタ ポル ファボール'},
+        {ja:'これをください', pt:'Quero isto, por favor', read:'ケロ イシュトゥ ポル ファボール'},
+        {ja:'おすすめは何ですか？', pt:'O que recomenda?', read:'オ ケ レコメンダ？'},
+        {ja:'おいしい！', pt:'Está delicioso!', read:'エシュタ デリシオーゾ！'},
+        {ja:'お会計をください', pt:'A conta, por favor', read:'ア コンタ ポル ファボール'},
+        {ja:'カードは使えますか？', pt:'Aceita cartão?', read:'アセイタ カルタォン？'},
+    ]},
+    { cat:'🗺️ 移動', items:[
+        {ja:'〜はどこですか？', pt:'Onde fica...?', read:'オンデ フィカ…？'},
+        {ja:'トイレはどこですか？', pt:'Onde é a casa de banho?', read:'オンデ エ ア カザ デ バーニョ？'},
+        {ja:'駅はどこですか？', pt:'Onde fica a estação?', read:'オンデ フィカ ア エシュタサォン？'},
+        {ja:'タクシーを呼んでください', pt:'Pode chamar um táxi?', read:'ポデ シャマール ウン タクシ？'},
+        {ja:'〜に行きたい', pt:'Quero ir para...', read:'ケロ イール パラ…'},
+    ]},
+    { cat:'🛍️ 買い物', items:[
+        {ja:'いくらですか？', pt:'Quanto custa?', read:'クアントゥ クシュタ？'},
+        {ja:'高すぎます', pt:'É muito caro', read:'エ ムイトゥ カロ'},
+        {ja:'試着できますか？', pt:'Posso experimentar?', read:'ポッソ エシュペリメンタール？'},
+    ]},
+    { cat:'🚨 緊急', items:[
+        {ja:'助けてください！', pt:'Ajuda!', read:'アジュダ！'},
+        {ja:'警察を呼んでください', pt:'Chame a polícia!', read:'シャメ ア ポリシア！'},
+        {ja:'具合が悪いです', pt:'Não me sinto bem', read:'ナォン メ シントゥ ベン'},
+        {ja:'病院に連れて行ってください', pt:'Leve-me ao hospital', read:'レヴ メ アオ オシュピタル'},
+    ]},
+];
+
+(function renderPhrases() {
+    document.getElementById('phraseList').innerHTML = phrases.map(s => `
+        <div class="phrase-group">
+            <div class="phrase-group-title">${s.cat}</div>
+            ${s.items.map(p => `
+                <div class="phrase-card">
+                    <div class="phrase-ja">${p.ja}</div>
+                    <div class="phrase-pt">${p.pt}</div>
+                    <div class="phrase-read">${p.read}</div>
+                </div>`).join('')}
+        </div>`).join('');
+})();
+
+// ── 支出 ──
+const getExps = () => JSON.parse(localStorage.getItem('pt_exp') || '[]');
+const saveExps = l => localStorage.setItem('pt_exp', JSON.stringify(l));
+
+function addExp() {
+    const amt = parseFloat(document.getElementById('expAmt').value);
+    if (isNaN(amt) || amt <= 0) return;
+    const note = document.getElementById('expNote').value.trim() || '支出';
+    const today = new Date().toLocaleDateString('ja-JP');
+    const list = getExps();
+    list.unshift({id: Date.now(), amt, note, date: today});
+    saveExps(list);
+    document.getElementById('expAmt').value = '';
+    document.getElementById('expNote').value = '';
+    renderExp();
+}
+
+function delExp(id) { saveExps(getExps().filter(e => e.id !== id)); renderExp(); }
+
+function clearExp() {
+    if (!confirm('すべての支出を削除しますか？')) return;
+    saveExps([]); renderExp();
+}
+
+function renderExp() {
+    const list = getExps();
+    const today = new Date().toLocaleDateString('ja-JP');
+    const todayT = list.filter(e => e.date === today).reduce((s,e) => s+e.amt, 0);
+    const allT   = list.reduce((s,e) => s+e.amt, 0);
+    document.getElementById('todayEur').textContent = `€${todayT.toFixed(2)}`;
+    document.getElementById('totalEur').textContent = `€${allT.toFixed(2)}`;
+    document.getElementById('todayJpy').textContent = rate ? `${fmt(todayT * rate)} 円` : '— 円';
+    document.getElementById('totalJpy').textContent = rate ? `${fmt(allT * rate)} 円` : '— 円';
+    const el = document.getElementById('expList');
+    if (!list.length) { el.innerHTML = '<div class="empty">支出を記録しましょう</div>'; return; }
+    el.innerHTML = list.map(e => `
+        <div class="exp-item">
+            <div class="exp-dot"></div>
+            <div class="exp-body">
+                <div class="exp-note-t">${e.note}</div>
+                <div class="exp-date-t">${e.date}</div>
+            </div>
+            <div class="exp-right">
+                <div class="exp-eur-t">€${e.amt.toFixed(2)}</div>
+                ${rate ? `<div class="exp-jpy-t">≈ ${fmt(e.amt * rate)}円</div>` : ''}
+            </div>
+            <button class="exp-del" onclick="delExp(${e.id})">✕</button>
+        </div>`).join('');
+}
+
+// ── 時計 ──
+let clockTimer = null;
+function startClock() {
+    if (clockTimer) return;
+    tick(); clockTimer = setInterval(tick, 1000);
+}
+function tick() {
+    const now = new Date();
+    const ptD = new Date(now.toLocaleString('en-US', {timeZone:'Europe/Lisbon'}));
+    const jpD = new Date(now.toLocaleString('en-US', {timeZone:'Asia/Tokyo'}));
+    const hm = d => `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    const md = d => `${d.getMonth()+1}月${d.getDate()}日（${'日月火水木金土'[d.getDay()]}）`;
+    document.getElementById('ptTime').textContent = hm(ptD);
+    document.getElementById('ptDate').textContent = md(ptD);
+    document.getElementById('jpTime').textContent = hm(jpD);
+    document.getElementById('jpDate').textContent = md(jpD);
+}
+
+// ── 天気 ──
+const wmo = {
+    0:['☀️','快晴'], 1:['🌤️','晴れ'], 2:['⛅','一部曇り'], 3:['☁️','曇り'],
+    45:['🌫️','霧'], 48:['🌫️','霧'],
+    51:['🌦️','霧雨（弱）'], 53:['🌦️','霧雨'], 55:['🌦️','霧雨（強）'],
+    61:['🌧️','小雨'], 63:['🌧️','雨'], 65:['🌧️','大雨'],
+    71:['🌨️','小雪'], 73:['🌨️','雪'], 75:['❄️','大雪'],
+    80:['🌦️','にわか雨'], 81:['🌦️','にわか雨'], 82:['⛈️','強いにわか雨'],
+    95:['⛈️','雷雨'], 96:['⛈️','雷雨'], 99:['⛈️','激しい雷雨']
+};
+
+async function fetchWeather() {
+    const el = document.getElementById('wxResult');
+    el.innerHTML = '<div class="empty">📍 現在地を取得中…</div>';
+    navigator.geolocation.getCurrentPosition(async pos => {
+        const {latitude:lat, longitude:lon} = pos.coords;
+        el.innerHTML = '<div class="empty">🌤️ 取得中…</div>';
+        try {
+            const d = await (await fetch(
+                `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weathercode,windspeed_10m&timezone=auto`
+            )).json();
+            const c = d.current;
+            const [icon, desc] = wmo[c.weathercode] || ['🌡️','不明'];
+            el.innerHTML = `
+                <div class="wx-display">
+                    <div class="wx-icon">${icon}</div>
+                    <div>
+                        <div class="wx-temp">${c.temperature_2m}°</div>
+                        <div class="wx-desc">${desc}</div>
+                        <div class="wx-wind">💨 ${c.windspeed_10m} km/h</div>
+                    </div>
+                </div>`;
+        } catch { el.innerHTML = '<div class="err">天気の取得に失敗しました。</div>'; }
+    }, () => { el.innerHTML = '<div class="err">位置情報を許可してください。</div>'; },
+    {enableHighAccuracy:true, timeout:10000});
+}
+
+fetchRate();
+renderExp();
+</script>
+</body>
+</html>
