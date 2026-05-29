@@ -533,6 +533,7 @@
         <button class="chip" data-cat="cafe" onclick="selCat(this)">☕ カフェ</button>
         <button class="chip" data-cat="shop" onclick="selCat(this)">🛍️ ショップ</button>
         <button class="chip" data-cat="bar" onclick="selCat(this)">🍺 バー</button>
+        <button class="chip" data-cat="icecream" onclick="selCat(this)">🍦 アイス</button>
     </div>
     <div class="range-row">
         <label>検索範囲</label>
@@ -693,7 +694,8 @@ const spotQ = {
     cafe:        `node["amenity"="cafe"](around:{R},{LAT},{LON});`,
     bar:         `node["amenity"~"^(bar|pub)$"](around:{R},{LAT},{LON});`,
     sightseeing: `node["tourism"~"^(attraction|museum|monument|viewpoint|gallery)$"](around:{R},{LAT},{LON});way["tourism"~"^(attraction|museum|monument)$"](around:{R},{LAT},{LON});`,
-    shop:        `node["shop"](around:{R},{LAT},{LON});`
+    shop:        `node["shop"](around:{R},{LAT},{LON});`,
+    icecream:    `node["amenity"="ice_cream"](around:{R},{LAT},{LON});node["shop"="ice_cream"](around:{R},{LAT},{LON});`
 };
 const typeLabel = {
     restaurant:'レストラン', fast_food:'ファストフード', cafe:'カフェ',
