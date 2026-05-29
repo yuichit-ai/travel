@@ -291,6 +291,22 @@
             border-radius: 999px;
         }
         .spot-dist { font-size: 12px; color: var(--text3); font-weight: 600; }
+        .spot-cuisine {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text2);
+            background: var(--gray-lt);
+            padding: 4px 10px;
+            border-radius: 999px;
+        }
+        .spot-info {
+            font-size: 12px;
+            color: var(--text2);
+            margin-top: 7px;
+            display: block;
+            font-weight: 500;
+        }
+        a.spot-tel { color: var(--navy-2); font-weight: 700; text-decoration: none; }
         .spot-link {
             display: inline-flex;
             align-items: center;
@@ -685,9 +701,41 @@ const typeLabel = {
     monument:'モニュメント', viewpoint:'展望台', gallery:'ギャラリー'
 };
 
+const catEmoji = {
+    restaurant:'🍽️', fast_food:'🍔', cafe:'☕', bar:'🍺', pub:'🍺',
+    attraction:'🏛️', museum:'🏛️', monument:'🗿', viewpoint:'🔭', gallery:'🖼️',
+    shop:'🛍️'
+};
+
+const cuisineMap = {
+    portuguese:'ポルトガル料理', seafood:'シーフード', fish:'魚料理',
+    pizza:'ピザ', italian:'イタリアン', burger:'バーガー',
+    sushi:'寿司', japanese:'日本料理', asian:'アジア料理',
+    chinese:'中華', french:'フレンチ', indian:'インド料理',
+    mediterranean:'地中海料理', spanish:'スペイン料理', greek:'ギリシャ料理',
+    steak_house:'ステーキ', sandwich:'サンドイッチ', kebab:'ケバブ',
+    ice_cream:'アイスクリーム', cake:'ケーキ', coffee:'コーヒー',
+};
+
+function cuisineLabel(raw) {
+    if (!raw) return null;
+    const first = raw.split(/[;,]/)[0].trim().toLowerCase();
+    return cuisineMap[first] || null;
+}
+
+function hoursLabel(raw) {
+    if (!raw) return null;
+    if (raw === '24/7') return '24時間営業';
+    return raw.length > 30 ? raw.slice(0, 30) + '…' : raw;
+}
+
 function spotLabel(tags) {
     return typeLabel[tags.amenity] || typeLabel[tags.tourism]
         || (tags.shop && tags.shop !== 'yes' ? tags.shop : 'ショップ') || 'スポット';
+}
+
+function spotEmoji(tags) {
+    return catEmoji[tags.amenity] || catEmoji[tags.tourism] || (tags.shop ? '🛍️' : '📍');
 }
 
 function geoD(a1,o1,a2,o2) {
@@ -705,21 +753,21 @@ function selCat(btn) {
 const OVERPASS_MIRRORS = [
     'https://overpass-api.de/api/interpreter',
     'https://overpass.kumi.systems/api/interpreter',
-    'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
 ];
 
 async function overpassFetch(query) {
-    for (const url of OVERPASS_MIRRORS) {
+    for (const base of OVERPASS_MIRRORS) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 18000);
         try {
-            const res = await fetch(url, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: 'data=' + encodeURIComponent(query),
-                signal: AbortSignal.timeout(18000),
-            });
+            const res = await fetch(
+                `${base}?data=${encodeURIComponent(query)}`,
+                { signal: controller.signal }
+            );
+            clearTimeout(timer);
             if (!res.ok) continue;
             return await res.json();
-        } catch { continue; }
+        } catch { clearTimeout(timer); continue; }
     }
     throw new Error('all mirrors failed');
 }
@@ -738,18 +786,25 @@ function searchSpots() {
             const spots = (data.elements||[])
                 .filter(e => e.tags?.name)
                 .map(e => { const la=e.lat??e.center?.lat, lo=e.lon??e.center?.lon;
-                    return {name:e.tags.name, label:spotLabel(e.tags), lat:la, lon:lo, d:geoD(lat,lon,la,lo)}; })
+                    return {name:e.tags.name, label:spotLabel(e.tags), emoji:spotEmoji(e.tags),
+                            tags:e.tags, lat:la, lon:lo, d:geoD(lat,lon,la,lo)}; })
                 .sort((a,b)=>a.d-b.d).slice(0,25);
             if (!spots.length) { el.innerHTML='<div class="err">スポットが見つかりません。範囲を広げてみてください。</div>'; return; }
-            el.innerHTML = spots.map(s => `
+            el.innerHTML = spots.map(s => {
+                const cuisine = cuisineLabel(s.tags.cuisine);
+                const hours   = hoursLabel(s.tags.opening_hours);
+                return `
                 <div class="spot-card">
-                    <div class="spot-name">${s.name}</div>
+                    <div class="spot-name">${s.emoji} ${s.name}</div>
                     <div class="spot-meta">
                         <span class="spot-badge">${s.label}</span>
+                        ${cuisine ? `<span class="spot-cuisine">${cuisine}</span>` : ''}
                         <span class="spot-dist">📏 ${s.d}m</span>
                     </div>
+                    ${hours ? `<div class="spot-info">🕐 ${hours}</div>` : ''}
                     <a class="spot-link" href="https://www.google.com/maps/search/?api=1&query=${s.lat},${s.lon}" target="_blank">Google マップで見る →</a>
-                </div>`).join('');
+                </div>`;
+            }).join('');
         } catch { el.innerHTML='<div class="err">取得に失敗しました。時間をおいて再試行してください。</div>'; }
     }, (err) => {
         if (err.code === 1) el.innerHTML = '<div class="err">位置情報の使用を許可してください（ブラウザの設定）。</div>';
