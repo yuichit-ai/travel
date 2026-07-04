@@ -468,6 +468,139 @@
         /* 共通 */
         .empty { text-align: center; padding: 28px 16px; color: var(--text3); font-size: 14px; font-weight: 500; }
         .err { background: #FFF1F1; border-left: 3px solid #EF4444; border-radius: 10px; padding: 12px 14px; color: #DC2626; font-size: 14px; font-weight: 600; }
+
+        /* ── スケジュール ── */
+        .sch-day-row {
+            display: flex;
+            gap: 7px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            margin-bottom: 16px;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        .sch-day-row::-webkit-scrollbar { display: none; }
+        .sch-day-chip {
+            padding: 8px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 999px;
+            background: white;
+            color: var(--text2);
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
+            transition: all 0.18s;
+            font-family: 'Noto Sans JP', sans-serif;
+            text-align: center;
+            line-height: 1.3;
+        }
+        .sch-day-chip.active {
+            background: var(--navy);
+            border-color: var(--navy);
+            color: white;
+        }
+        .sch-day-chip.today {
+            border-color: var(--navy-2);
+            color: var(--navy-2);
+        }
+        .sch-day-chip.today.active { color: white; }
+
+        .sch-timeline { position: relative; padding-left: 16px; }
+        .sch-timeline::before {
+            content: '';
+            position: absolute;
+            left: 52px;
+            top: 8px;
+            bottom: 8px;
+            width: 2px;
+            background: var(--border);
+        }
+        .sch-item {
+            display: flex;
+            gap: 0;
+            margin-bottom: 18px;
+            position: relative;
+        }
+        .sch-time-col {
+            width: 52px;
+            flex-shrink: 0;
+            padding-right: 8px;
+            text-align: right;
+        }
+        .sch-time {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--navy-2);
+            line-height: 1;
+        }
+        .sch-time-end {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text3);
+            margin-top: 2px;
+        }
+        .sch-dot-col {
+            width: 18px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 2px;
+        }
+        .sch-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--navy);
+            border: 2px solid white;
+            box-shadow: 0 0 0 2px var(--navy);
+            flex-shrink: 0;
+        }
+        .sch-body {
+            flex: 1;
+            padding-left: 12px;
+            padding-top: 0;
+        }
+        .sch-text {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1.4;
+        }
+        .sch-badge {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 800;
+            color: white;
+            background: #E85D04;
+            padding: 2px 8px;
+            border-radius: 999px;
+            margin-bottom: 4px;
+        }
+        .sch-note-btn {
+            margin-top: 6px;
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--navy-2);
+            cursor: pointer;
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+        .sch-note {
+            margin-top: 8px;
+            background: var(--navy-lt);
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text2);
+            line-height: 1.7;
+        }
     </style>
 </head>
 <body>
@@ -630,10 +763,25 @@
     </div>
 </div>
 
+<!-- ===== スケジュール ===== -->
+<div id="page-schedule" class="page">
+    <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:var(--text2)"><span style="width:9px;height:9px;border-radius:50%;background:#F97316;display:inline-block"></span>移動</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:var(--text2)"><span style="width:9px;height:9px;border-radius:50%;background:#22C55E;display:inline-block"></span>食事</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:var(--text2)"><span style="width:9px;height:9px;border-radius:50%;background:#8B5CF6;display:inline-block"></span>観光</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:var(--text2)"><span style="width:9px;height:9px;border-radius:50%;background:var(--navy);display:inline-block"></span>ホテル</span>
+    </div>
+    <div class="sch-day-row" id="schDayRow"></div>
+    <div class="sch-timeline" id="schTimeline"></div>
+</div>
+
 <!-- ===== ボトムナビ ===== -->
 <nav class="bottom-nav">
     <button class="nav-btn active" id="nav-currency" onclick="showPage('currency')">
         <span class="ico">💶</span>為替
+    </button>
+    <button class="nav-btn" id="nav-schedule" onclick="showPage('schedule')">
+        <span class="ico">📅</span>日程
     </button>
     <button class="nav-btn" id="nav-spots" onclick="showPage('spots')">
         <span class="ico">📍</span>スポット
@@ -829,10 +977,17 @@ const phrases = [
     { cat:'🍽️ 食事', items:[
         {ja:'メニューをください', pt:'A ementa, por favor', read:'ア エメンタ ポル ファボール'},
         {ja:'これをください', pt:'Quero isto, por favor', read:'ケロ イシュトゥ ポル ファボール'},
+        {ja:'これを一つください', pt:'Quero um disto, por favor', read:'ケロ ウン ディシュトゥ ポル ファボール'},
         {ja:'おすすめは何ですか？', pt:'O que recomenda?', read:'オ ケ レコメンダ？'},
         {ja:'おいしい！', pt:'Está delicioso!', read:'エシュタ デリシオーゾ！'},
         {ja:'お会計をください', pt:'A conta, por favor', read:'ア コンタ ポル ファボール'},
         {ja:'カードは使えますか？', pt:'Aceita cartão?', read:'アセイタ カルタォン？'},
+    ]},
+    { cat:'📸 写真・動画', items:[
+        {ja:'写真を撮ってもいいですか？', pt:'Posso tirar uma foto?', read:'ポッソ ティラール ウマ フォト？'},
+        {ja:'動画を撮ってもいいですか？', pt:'Posso filmar?', read:'ポッソ フィルマール？'},
+        {ja:'他の人は映らないようにします', pt:'Vou garantir que não aparecem outras pessoas.', read:'ヴォウ ガランティール ケ ナォン アパレセン アウトラス ペッソアス'},
+        {ja:'一緒に写真を撮ってもいいですか？', pt:'Posso tirar uma foto consigo?', read:'ポッソ ティラール ウマ フォト コンシーゴ？'},
     ]},
     { cat:'🗺️ 移動', items:[
         {ja:'〜はどこですか？', pt:'Onde fica...?', read:'オンデ フィカ…？'},
@@ -971,6 +1126,155 @@ async function fetchWeather() {
     }, () => { el.innerHTML = '<div class="err">位置情報を許可してください。</div>'; },
     {enableHighAccuracy:true, timeout:10000});
 }
+
+// ── スケジュール ──
+const TYPE_COLOR = { move:'#F97316', food:'#22C55E', sight:'#8B5CF6', hotel:'#0C1B4D' };
+const mapBtn = q => `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--navy);color:white;padding:8px 14px;border-radius:10px;text-decoration:none;font-size:12px;font-weight:700;margin-top:4px">📍 地図で開く</a>`;
+
+const scheduleData = [
+  { day:1, date:'2026-07-01', wd:'水', items:[
+    {t:'4:56', type:'move', text:'茅ヶ崎駅から東海道線で横浜駅まで'},
+    {t:'5:34', type:'move', text:'横浜駅から羽田空港第二ターミナルへ'},
+    {t:'6:00', type:'move', text:'スーツケース受け取る'},
+    {t:'8:25', end:'15:35', type:'move', text:'✈️ 飛行機 羽田発'},
+    {t:'16:00', end:'16:30', type:'move', text:'🧳 イスタンブール空港のロッカーか預かり所に入れる', note:'有人カウンターとコインロッカーの2種類、どちらも24時間利用可能。\n\n📍 場所: 出発階（Departures）1番・6番ゲート付近\n\n💰 料金目安（2026年）\n・中型（機内持ち込みサイズ）: 約270TL（約1,100円）\n・大型（スーツケース）: 約550TL（約2,200円）\n\n💳 支払いはクレジットカードがスムーズ'},
+    {t:'16:30', end:'17:00', type:'move', text:'イスタンブール空港から電車でホテルに移動'},
+    {t:'17:00', type:'hotel', text:'🏨 Union Hotel Karaköy', note:'🔗 <a href="https://www.booking.com/Share-O272gr" target="_blank" style="color:var(--navy-2);font-weight:700">Booking.com で確認</a>\n\n<a href="https://www.google.com/maps/search/?api=1&query=Union+Hotel+Karakoy+Istanbul" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--navy);color:white;padding:8px 14px;border-radius:10px;text-decoration:none;font-size:12px;font-weight:700">📍 地図で開く</a>'},
+  ]},
+  { day:2, date:'2026-07-02', wd:'木', items:[
+    {t:'10:00', type:'move', text:'イスタンブール空港に向かう'},
+    {t:'10:30', type:'move', text:'スーツケース回収'},
+    {t:'12:45', end:'15:35', type:'move', text:'✈️ イスタンブール発'},
+    {t:'16:00', type:'move', text:'ホテルに移動　タクシー or Uber'},
+    {t:'17:00', type:'hotel', text:'🏨 Epic Sana Marquês Hotel', note:'🔗 <a href="https://www.booking.com/Share-k4RpAyj" target="_blank" style="color:var(--navy-2);font-weight:700">Booking.com で確認</a>\n\n<a href="https://www.google.com/maps/search/?api=1&query=Epic+Sana+Marques+Hotel+Lisboa" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--navy);color:white;padding:8px 14px;border-radius:10px;text-decoration:none;font-size:12px;font-weight:700">📍 地図で開く</a>'},
+    {t:'18:00', type:'food', text:'🍽️ レストラン Tascardoso（プリンシペ・レアル地区）', mapQ:'Tascardoso Rua de O Seculo 242 Lisboa'},
+  ]},
+  { day:3, date:'2026-07-03', wd:'金', items:[
+    {t:'9:00', end:'9:30', type:'move', text:'タクシーでジェロニモス修道院へ'},
+    {t:'9:30', end:'11:30', type:'sight', text:'🏛️ ジェロニモス修道院（9:30入場）', mapQ:'Mosteiro dos Jeronimos Lisboa'},
+    {t:'11:30', end:'12:00', type:'food', text:'🥐 パステイシュ・デ・ベレン（エッグタルト）', mapQ:'Pasteis de Belem Rua de Belem 84 Lisboa'},
+    {t:'12:00', type:'move', text:'タイムアウトマーケットへ移動'},
+    {t:'12:30', type:'food', text:'🍽️ タイムアウトマーケットで昼食', mapQ:'Time Out Market Lisboa Av 24 de Julho 49'},
+    {t:'15:00', type:'sight', text:'🏭 LX Factory（Uber）', mapQ:'LX Factory Rua Rodrigues de Faria 103 Lisboa'},
+    {t:'18:00', type:'food', text:'🍽️ 夕食'},
+  ]},
+  { day:4, date:'2026-07-04', wd:'土', items:[
+    {t:'9:00', type:'sight', text:'🏛️ パンテオン'},
+    {t:'10:00', type:'sight', text:'🛍️ どろぼう市'},
+    {t:'12:00', type:'food', badge:'予約確定', text:'🍽️ Floresta das Escadinhas でランチ', mapQ:'Floresta das Escadinhas Rua de Santa Justa 3 Lisboa'},
+    {t:'13:00', type:'sight', text:'路地裏散策'},
+    {t:'14:00', type:'sight', text:'🎨 アズレージョ美術館'},
+    {t:'18:00', type:'food', text:'🦞 Uma Marisqueira でディナー', mapQ:'Uma Marisqueira Rua dos Sapateiros 177 Lisboa'},
+  ]},
+  { day:5, date:'2026-07-05', wd:'日', items:[
+    {t:'', type:'sight', text:'🐂 牛祭'},
+  ]},
+  { day:6, date:'2026-07-06', wd:'月', items:[
+    {t:'10:00', type:'move', text:'タクシーでサンタ・アポローニャ駅へ'},
+    {t:'11:30', end:'14:00', type:'move', text:'🚂 電車APでポルトへ'},
+    {t:'14:20', type:'move', text:'Campanhã（カンパニャン）駅からタクシーでホテルへ'},
+    {t:'15:00', type:'hotel', text:'🏨 トレル・アヴァンガルド', note:'<a href="https://www.google.com/maps/search/?api=1&query=Torel+Avantgarde+Porto" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--navy);color:white;padding:8px 14px;border-radius:10px;text-decoration:none;font-size:12px;font-weight:700">📍 地図で開く</a>'},
+    {t:'18:00', type:'food', text:'🍽️ Terra Nova で夕食', mapQ:'Terra Nova Cais da Ribeira 34 Porto'},
+  ]},
+  { day:7, date:'2026-07-07', wd:'火', items:[
+    {t:'9:30', type:'move', text:'ボリャン市場へ移動'},
+    {t:'10:00', type:'sight', text:'🛒 ボリャン市場'},
+    {t:'12:00', type:'sight', text:'⛪ カペラ・ダス・アルマス (Capela das Almas)'},
+    {t:'12:15', type:'sight', text:'🛍️ サンタ・カタリーナ通り (Rua de Santa Catarina)'},
+    {t:'12:30', type:'food', text:'☕ マジェスティック・カフェ (Majestic Café)', mapQ:'Majestic Cafe Rua de Santa Catarina 112 Porto'},
+    {t:'13:00', type:'sight', text:'🚂 サン・ベント駅 (Estação de São Bento)'},
+    {t:'14:00', type:'sight', text:'🎁 Toranja Santa Catarina（お土産）'},
+    {t:'18:00', type:'food', text:'🍽️ Cantina 32 でディナー', mapQ:'Cantina 32 Rua das Flores 32 Porto'},
+  ]},
+  { day:8, date:'2026-07-08', wd:'水', items:[
+    {t:'9:00', type:'move', text:'レサ・ダ・パルメイラ（Leça da Palmeira）へ'},
+    {t:'10:00', type:'sight', text:'🏊 海のプール（Piscina das Marés）'},
+    {t:'12:00', type:'food', text:'🍽️ Los Ibéricos でランチ', mapQ:'Los Ibericos Largo do Castelo 3 Leca da Palmeira'},
+    {t:'18:00', type:'food', text:'🍷 Adega São Nicolau', mapQ:'Adega Sao Nicolau Rua Sao Nicolau 1 Porto'},
+  ]},
+  { day:9, date:'2026-07-09', wd:'木', items:[
+    {t:'14:40', end:'20:00', type:'move', text:'🚌 アルブフェイラに移動'},
+  ]},
+  { day:10, date:'2026-07-10', wd:'金', items:[
+    {t:'12:00', type:'food', text:'🍽️ Casa da Fonte でランチ', mapQ:'Casa da Fonte Rua Joao Deus 7 Albufeira'},
+    {t:'18:00', type:'food', text:'🍽️ Taberna Saudade でディナー', mapQ:'Taberna Saudade Travessa dos Arcos 11 Albufeira'},
+  ]},
+  { day:11, date:'2026-07-11', wd:'土', items:[
+    {t:'', type:'sight', text:'🏖️ フリーデイ'},
+  ]},
+  { day:12, date:'2026-07-12', wd:'日', items:[
+    {t:'5:30', end:'6:30', type:'move', text:'空港に移動'},
+    {t:'8:35', end:'12:05', type:'move', text:'✈️ ジュネーブへ'},
+    {t:'12:20', type:'move', text:'無料チケットを受け取る'},
+    {t:'12:30', end:'12:50', type:'move', text:'🚂 電車でホテルへ'},
+    {t:'14:00', type:'hotel', text:'🏨 Hotel Suisse', note:'<a href="https://www.google.com/maps/search/?api=1&query=Hotel+Suisse+Geneva" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--navy);color:white;padding:8px 14px;border-radius:10px;text-decoration:none;font-size:12px;font-weight:700">📍 地図で開く</a>'},
+  ]},
+  { day:13, date:'2026-07-13', wd:'月', items:[
+    {t:'8:00', type:'move', text:'電車で空港へ'},
+    {t:'10:30', end:'14:45', type:'move', text:'✈️ ジュネーブ → イスタンブール'},
+    {t:'17:45', end:'24:00', type:'move', text:'✈️ イスタンブール → 羽田'},
+  ]},
+  { day:14, date:'2026-07-14', wd:'火', items:[
+    {t:'0:00', end:'11:10', type:'move', text:'✈️ イスタンブール → 羽田'},
+  ]},
+];
+
+let schCurrentDay = 0;
+
+function initSchedule() {
+    const today = new Date().toISOString().slice(0,10);
+    const tripStart = scheduleData[0].date;
+    const tripEnd   = scheduleData[scheduleData.length-1].date;
+    const inTrip    = today >= tripStart && today <= tripEnd;
+    const row = document.getElementById('schDayRow');
+    let defaultIdx = 0;
+    row.innerHTML = scheduleData.map((d, i) => {
+        const isToday = d.date === today;
+        if (inTrip && isToday) defaultIdx = i;
+        return `<button class="sch-day-chip${isToday?' today':''}" onclick="showSchDay(${i})" id="schChip${i}">
+            <div>${d.day}日目</div>
+            <div style="font-size:10px;font-weight:600;opacity:0.7">${d.date.slice(5).replace('-','/')}(${d.wd})</div>
+        </button>`;
+    }).join('');
+    showSchDay(defaultIdx);
+}
+
+function showSchDay(idx) {
+    schCurrentDay = idx;
+    document.querySelectorAll('.sch-day-chip').forEach((c,i) => c.classList.toggle('active', i===idx));
+    const chip = document.getElementById('schChip'+idx);
+    if (chip) chip.scrollIntoView({behavior:'smooth', block:'nearest', inline:'center'});
+    const d = scheduleData[idx];
+    document.getElementById('schTimeline').innerHTML = d.items.map((item, i) => `
+        <div class="sch-item">
+            <div class="sch-time-col">
+                <div class="sch-time">${item.t}</div>
+                ${item.end ? `<div class="sch-time-end">↓${item.end}</div>` : ''}
+            </div>
+            <div class="sch-dot-col"><div class="sch-dot" style="background:${TYPE_COLOR[item.type]||'#0C1B4D'};box-shadow:0 0 0 2px ${TYPE_COLOR[item.type]||'#0C1B4D'}"></div></div>
+            <div class="sch-body">
+                ${item.badge ? `<div class="sch-badge">${item.badge}</div>` : ''}
+                <div class="sch-text">${item.text}</div>
+                ${(item.note || item.mapQ) ? `
+                <button class="sch-note-btn" onclick="toggleNote(this)">詳細 ▾</button>
+                <div class="sch-note" style="display:none">${(item.note ? item.note.replace(/\n/g,'<br>') : '') + (item.mapQ ? (item.note ? '<br><br>' : '') + mapBtn(item.mapQ) : '')}</div>` : ''}
+            </div>
+        </div>`).join('');
+}
+
+function toggleNote(btn) {
+    const note = btn.nextElementSibling;
+    const open = note.style.display === 'none';
+    note.style.display = open ? 'block' : 'none';
+    btn.textContent = open ? '詳細 ▴' : '詳細 ▾';
+}
+
+// showPage に schedule 対応を追加
+const _origShowPage = showPage;
+showPage = function(name) {
+    _origShowPage(name);
+    if (name === 'schedule') initSchedule();
+};
 
 fetchRate();
 renderExp();
